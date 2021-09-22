@@ -15,32 +15,18 @@ namespace SupportBank
         {
             Console.WriteLine("Hello World!");
             
-            // path to the csv file
-            /*string path = "C:/Training/Support Bank/DodgyTransactions2015.csv";
-
-            var lines = File.ReadAllLines(path).Skip(1);
-            foreach (string line in lines)
-            {
-                var fields = line.Split(',');
-                foreach (string field in fields)
-                {
-                    Console.WriteLine(field);
-                }
-            }*/
             List<Transaction> transactions = File.ReadAllLines("C:\\Training\\Support Bank\\Transactions2014.csv")
                                 .Skip(1)
                                 .Select(line => Transaction.FromCsv(line))
                                 .ToList();
 
-            List<Account> accounts = new List<Account>();
-            
-            CreateAllAccounts(accounts, transactions);
+            List<Account> accounts = CreateAllAccounts(transactions);
             
             Console.WriteLine(accounts.Count);
 
             while(true)
             {
-                Console.WriteLine("Select an option\n 1.ListAll \n2. List a account");
+                Console.WriteLine("Select an option\n1. ListAll \n2. List a account");
                 var option = (Console.ReadLine());
                 switch (option)
                 {
@@ -51,50 +37,31 @@ namespace SupportBank
                     case "2":
                             Console.WriteLine("Enter Account Name:");
                             var accountname = Console.ReadLine();
-
-
+                            ListAccount(accounts , accountname);
                             break;
                 }
 
             }
 
-            
-
         }
 
-        public static void CreateAllAccounts(List<Account> accounts, List<Transaction> transactions)
-        {
-            List<string> Employees = new List<string> ();
-
-            foreach (Transaction transaction in transactions)
-            {
-                if (Employees.Find(employee => employee == transaction.From) == null)
-                    Employees.Add(transaction.From);
-                if (Employees.Find(employee => employee == transaction.To) == null)
-                    Employees.Add(transaction.To);       
-            }
-            Employees.ForEach(Console.WriteLine);
-
-            foreach(string employee in Employees)
-                accounts.Add(CreateAccount(employee, transactions));
-            
-            
-            
-        }
-
-        public static Account CreateAccount(string employee, List<Transaction> transactions)
+        public static List<Account> CreateAllAccounts(List<Transaction> transactions)
         {
                       
-            Account account = new Account(employee);
+            Dictionary<string, Account> account = new Dictionary<string, Account>();
 
             foreach(Transaction transaction in transactions)
             {
-                if(transaction.From == employee)
-                    account.OutgoingTransactions.Add(transaction);
-                else if (transaction.To == employee)
-                    account.IncomingTransactions.Add(transaction);
+                if(!account.ContainsKey(transaction.From))
+                    account.Add(transaction.From, new Account(transaction.From));
+                if(!account.ContainsKey(transaction.To))
+                    account.Add(transaction.To, new Account(transaction.To));
+                
+                account[transaction.From].OutgoingTransactions.Add(transaction);
+                account[transaction.To].IncomingTransactions.Add(transaction);
+                
             }
-            return account;
+            return account.Values.ToList();
         }
 
         public static void ListAllAccounts(List<Account> accounts)
@@ -110,8 +77,23 @@ namespace SupportBank
         public static decimal calculateAmount (List<Transaction> transactions)
         {
             decimal total = 0;
-            transactions.ForEach(transaction => total +=transaction.Amount);
+            transactions.ForEach(transaction => total += transaction.Amount);
             return total;
+        }
+
+        public static void ListAccount(List<Account> accounts, string accountname)
+        {
+            Account accounttolist = accounts.Find(account => account.Name == accountname);
+            Console.WriteLine("Name :" + accounttolist.Name);
+            Console.WriteLine("Transaction\n");
+            accounttolist.OutgoingTransactions.ForEach(transaction => PrintTransaction(transaction));
+            accounttolist.IncomingTransactions.ForEach(transaction => PrintTransaction(transaction));
+
+        }
+
+        public static void PrintTransaction(Transaction transaction)
+        {
+            Console.WriteLine(transaction.Date.ToString("MM-dd-yyyy") + "\t"+ transaction.From + "\t" + transaction.To + "\t" + transaction.Narrative + "\t" + transaction.Amount);
         }
     }
 }
