@@ -7,93 +7,85 @@ namespace SupportBank
 {
     class Program
     {
-        enum Options
-        {
-
-        }
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            
-            List<Transaction> transactions = File.ReadAllLines("C:\\Training\\Support Bank\\Transactions2014.csv")
-                                .Skip(1)
-                                .Select(line => Transaction.FromCsv(line))
-                                .ToList();
+            List<Transaction> transactions = ReadAllTransactions("C:\\Training\\Support Bank\\Transactions2014.csv");
 
-            List<Account> accounts = CreateAllAccounts(transactions);
-            
-            Console.WriteLine(accounts.Count);
+            Dictionary<string, Account> accounts = CreateAllAccounts(transactions);
 
-            while(true)
+            while (true)
             {
                 Console.WriteLine("Select an option\n1. ListAll \n2. List a account");
                 var option = (Console.ReadLine());
                 switch (option)
                 {
                     case "1":
-                            ListAllAccounts(accounts);
-                            break;
+                        ListAllAccounts(accounts);
+                        break;
 
                     case "2":
-                            Console.WriteLine("Enter Account Name:");
-                            var accountname = Console.ReadLine();
-                            ListAccount(accounts , accountname);
-                            break;
+                        Console.WriteLine("Enter Account Name:");
+                        var accountname = Console.ReadLine();
+                        ListAccount(accounts, accountname);
+                        break;
                 }
 
             }
 
         }
 
-        public static List<Account> CreateAllAccounts(List<Transaction> transactions)
-        {
-                      
-            Dictionary<string, Account> account = new Dictionary<string, Account>();
+        public static List<Transaction> ReadAllTransactions(string path) => File.ReadAllLines("C:\\Training\\Support Bank\\Transactions2014.csv")
+                                                .Skip(1)
+                                                .Select(line => Transaction.FromCsv(line))
+                                                .ToList();
 
-            foreach(Transaction transaction in transactions)
+        public static Dictionary<string, Account> CreateAllAccounts(List<Transaction> transactions)
+        {
+            Dictionary<string, Account> accounts = new Dictionary<string, Account>();
+
+            foreach (Transaction transaction in transactions)
             {
-                if(!account.ContainsKey(transaction.From))
-                    account.Add(transaction.From, new Account(transaction.From));
-                if(!account.ContainsKey(transaction.To))
-                    account.Add(transaction.To, new Account(transaction.To));
-                
-                account[transaction.From].OutgoingTransactions.Add(transaction);
-                account[transaction.To].IncomingTransactions.Add(transaction);
-                
+                if (!accounts.ContainsKey(transaction.From))
+                    accounts.Add(transaction.From, new Account(transaction.From));
+
+                if (!accounts.ContainsKey(transaction.To))
+                    accounts.Add(transaction.To, new Account(transaction.To));
+
+                accounts[transaction.From].OutgoingTransactions.Add(transaction);
+                accounts[transaction.To].IncomingTransactions.Add(transaction);
             }
-            return account.Values.ToList();
+            return accounts;
         }
 
-        public static void ListAllAccounts(List<Account> accounts)
+        public static void ListAllAccounts(Dictionary<string, Account> accounts)
         {
-            foreach(Account account in accounts)
+            foreach (KeyValuePair<string, Account> account in accounts)
             {
-                Console.WriteLine("Name : " + account.Name);
-                Console.WriteLine("Amount to owe = " + calculateAmount(account.OutgoingTransactions));
-                Console.WriteLine("Amount owed   = " + calculateAmount(account.IncomingTransactions));
+                Console.WriteLine(account.Key);
+                Console.WriteLine("Amount to owe = " + calculateAmount(account.Value.OutgoingTransactions));
+                Console.WriteLine("Amount owed   = " + calculateAmount(account.Value.IncomingTransactions));
             }
         }
 
-        public static decimal calculateAmount (List<Transaction> transactions)
+        public static decimal calculateAmount(List<Transaction> transactions)
         {
             decimal total = 0;
             transactions.ForEach(transaction => total += transaction.Amount);
             return total;
         }
 
-        public static void ListAccount(List<Account> accounts, string accountname)
+        public static void ListAccount(Dictionary<string, Account> accounts, string accountname)
         {
-            Account accounttolist = accounts.Find(account => account.Name == accountname);
-            Console.WriteLine("Name :" + accounttolist.Name);
+            Console.WriteLine(accounts[accountname].Name);
             Console.WriteLine("Transaction\n");
-            accounttolist.OutgoingTransactions.ForEach(transaction => PrintTransaction(transaction));
-            accounttolist.IncomingTransactions.ForEach(transaction => PrintTransaction(transaction));
+            accounts[accountname].OutgoingTransactions.ForEach(transaction => PrintTransaction(transaction));
+            accounts[accountname].IncomingTransactions.ForEach(transaction => PrintTransaction(transaction));
 
         }
 
         public static void PrintTransaction(Transaction transaction)
         {
-            Console.WriteLine(transaction.Date.ToString("MM-dd-yyyy") + "\t"+ transaction.From + "\t" + transaction.To + "\t" + transaction.Narrative + "\t" + transaction.Amount);
+            Console.WriteLine(transaction.Date.ToString("MM-dd-yyyy") + "\t" + transaction.From + "\t" + transaction.To + "\t" + transaction.Narrative + "\t" + transaction.Amount);
         }
     }
 }
