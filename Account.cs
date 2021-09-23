@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SupportBank
 {
@@ -18,11 +19,10 @@ namespace SupportBank
         }
 
         
-        public static decimal calculateAmount(List<Transaction> transactions)
+        public static decimal calculateAmount(List<Transaction> Outgoingtransactions, List<Transaction> Incomingtransactions)
         {
-            decimal total = 0;
-            transactions.ForEach(transaction => total += transaction.Amount);
-            return total;
+            return(Outgoingtransactions.Sum(transaction => transaction.Amount) -
+                    Incomingtransactions.Sum(transaction => transaction.Amount) );
         }
 
     }
