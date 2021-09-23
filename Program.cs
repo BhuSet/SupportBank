@@ -7,33 +7,12 @@ namespace SupportBank
 {
     class Program
     {
-        static void Main(string[] args)
+        enum menu
         {
-            List<Transaction> transactions = ReadAllTransactions("C:\\Training\\Support Bank\\Transactions2014.csv");
-
-            Dictionary<string, Account> accounts = CreateAllAccounts(transactions);
-
-            while (true)
-            {
-                Console.WriteLine("Select an option\n1. ListAll \n2. List a account");
-                var option = (Console.ReadLine());
-                switch (option)
-                {
-                    case "1":
-                        ListAllAccounts(accounts);
-                        break;
-
-                    case "2":
-                        Console.WriteLine("Enter Account Name:");
-                        var accountname = Console.ReadLine();
-                        ListAccount(accounts, accountname);
-                        break;
-                }
-
-            }
+            List_All = 1,
+            List_one_account = 2
 
         }
-
         public static List<Transaction> ReadAllTransactions(string path) => File.ReadAllLines("C:\\Training\\Support Bank\\Transactions2014.csv")
                                                 .Skip(1)
                                                 .Select(line => Transaction.FromCsv(line))
@@ -62,30 +41,47 @@ namespace SupportBank
             foreach (KeyValuePair<string, Account> account in accounts)
             {
                 Console.WriteLine(account.Key);
-                Console.WriteLine("Amount to owe = " + calculateAmount(account.Value.OutgoingTransactions));
-                Console.WriteLine("Amount owed   = " + calculateAmount(account.Value.IncomingTransactions));
+                Console.WriteLine("Amount to owe = " + Account.calculateAmount(account.Value.OutgoingTransactions));
+                Console.WriteLine("Amount owed   = " + Account.calculateAmount(account.Value.IncomingTransactions));
             }
-        }
-
-        public static decimal calculateAmount(List<Transaction> transactions)
-        {
-            decimal total = 0;
-            transactions.ForEach(transaction => total += transaction.Amount);
-            return total;
         }
 
         public static void ListAccount(Dictionary<string, Account> accounts, string accountname)
         {
             Console.WriteLine(accounts[accountname].Name);
             Console.WriteLine("Transaction\n");
-            accounts[accountname].OutgoingTransactions.ForEach(transaction => PrintTransaction(transaction));
-            accounts[accountname].IncomingTransactions.ForEach(transaction => PrintTransaction(transaction));
+            accounts[accountname].OutgoingTransactions.ForEach(transaction => Transaction.PrintTransaction(transaction));
+            accounts[accountname].IncomingTransactions.ForEach(transaction => Transaction.PrintTransaction(transaction));
 
         }
-
-        public static void PrintTransaction(Transaction transaction)
+        
+        static void Main(string[] args)
         {
-            Console.WriteLine(transaction.Date.ToString("MM-dd-yyyy") + "\t" + transaction.From + "\t" + transaction.To + "\t" + transaction.Narrative + "\t" + transaction.Amount);
+            List<Transaction> transactions = ReadAllTransactions("C:\\Training\\Support Bank\\Transactions2014.csv");
+
+            Dictionary<string, Account> accounts = CreateAllAccounts(transactions);
+
+            while (true)
+            {
+                Console.WriteLine("Select an option\n1. List All \n2. List a account");
+                menu option = (menu) int.Parse(Console.ReadLine());
+                
+                switch (option)
+                {
+                    case (menu.List_All):
+                        ListAllAccounts(accounts);
+                        break;
+
+                    case (menu.List_one_account):
+                        Console.WriteLine("Enter Account Name:");
+                        var accountname = Console.ReadLine();
+                        ListAccount(accounts, accountname);
+                        break;
+                }
+
+            }
+
         }
+
     }
 }

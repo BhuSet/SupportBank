@@ -17,5 +17,13 @@ namespace SupportBank
             OutgoingTransactions = new List <Transaction>();
         }
 
+        
+        public static decimal calculateAmount(List<Transaction> transactions)
+        {
+            decimal total = 0;
+            transactions.ForEach(transaction => total += transaction.Amount);
+            return total;
+        }
+
     }
 }

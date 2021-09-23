@@ -21,5 +21,10 @@ namespace SupportBank
             transaction.Amount = Convert.ToDecimal(fields[4]);
             return transaction;
         }
+
+        public static void PrintTransaction(Transaction transaction)
+        {
+            Console.WriteLine($"{transaction.Date.ToString("MM-dd-yyyy"),-15} {transaction.From,-10} {transaction.To, -10} {transaction.Narrative,-35} {transaction.Amount,-10}");
+        }
     }
 }
