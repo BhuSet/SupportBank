@@ -69,13 +69,14 @@ namespace SupportBank
 
         public void ListAccount(string accountname)
         {
-            Console.WriteLine(Accounts[accountname].Name);
-            Console.WriteLine("Transaction\n");
-            List<Transaction> AllTransaction = (Accounts[accountname].OutgoingTransactions.Union(Accounts[accountname].IncomingTransactions).ToList());
-            AllTransaction.OrderBy(x => x.Date);
-            AllTransaction.ForEach(transaction => Transaction.PrintTransaction(transaction));
-            //Accounts[accountname].OutgoingTransactions.ForEach(transaction => Transaction.PrintTransaction(transaction));
-            //Accounts[accountname].IncomingTransactions.ForEach(transaction => Transaction.PrintTransaction(transaction));
+            if(Accounts.ContainsKey(accountname))
+            {
+                List<Transaction> AllTransaction = (Accounts[accountname].OutgoingTransactions.Union(Accounts[accountname].IncomingTransactions).ToList());
+                AllTransaction.OrderBy(x => x.Date);
+                AllTransaction.ForEach(transaction => Transaction.PrintTransaction(transaction));
+            }
+            else
+                Console.WriteLine("Cannot Find the Person name");
 
         }
         
@@ -93,7 +94,9 @@ namespace SupportBank
             while (true)
             {
                 Console.WriteLine("Select an option\n1. List All \n2. List a account");
-                menu option = (menu) int.Parse(Console.ReadLine());
+                menu option = menu.List_All;
+                while(!(menu.TryParse(Console.ReadLine(), out option)))
+                    Console.WriteLine($"Please enter Valid Option 1 or 2");
                 
                 switch (option)
                 {
@@ -103,8 +106,11 @@ namespace SupportBank
 
                     case (menu.List_one_account):
                         Console.WriteLine("Enter Account Name:");
-                        var accountname = Console.ReadLine();
-                        NewBank.ListAccount(accountname);
+                        NewBank.ListAccount(Console.ReadLine());
+                        break;
+
+                    default :
+                        Console.WriteLine("Please enter Valid option 1 or 2");
                         break;
                 }
 
